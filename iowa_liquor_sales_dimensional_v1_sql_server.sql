@@ -107,8 +107,12 @@ CREATE TABLE Dim_Iowa_Liquor_Stores (
 	Store_Status char(1) NULL,
 	
 	Address varchar(80) NULL,
-	Geo_SK int  null,
-    Store_Address varchar(80) NULL,   -- long/lat skip?
+	Zip_Code int NULL,
+                City_SK int NOT NULL,        -- added 2022-11-09
+                County_SK int NOT NULL,   -- added 2022-11-09
+
+	-- Geo_SK int  null,    -- use city_sk and county_sk instead 2022-11-09
+               --  Store_Address varchar(80) NULL,   -- skip? 2022-11-09
 	
 	Report_Date datetime NULL,
 	
@@ -117,12 +121,14 @@ CREATE TABLE Dim_Iowa_Liquor_Stores (
 	PRIMARY KEY (Store_SK)
 );
 
-CREATE TABLE Dim_Iowa_Liquor_Geo (
-    Geo_SK int not null identity(1,1),
+CREATE TABLE Dim_Iowa_Liquor_Geo (    -- do not use  2022-11-09
+                Geo_SK int not null identity(1,1),
 	
-	City     varchar(20) NULL,
+                City_SK int NOT NULL,    -- added 2022-11-07
+	City     varchar(20) NULL,   
 	Zip_Code int NULL,
-	County   varchar(24) NULL,
+                County_SK int NOT NULL,   -- added 2022-11-07
+	County  varchar(24) NULL,
 	State    varchar(20) NULL,
 	
 	DI_JobID varchar(20) NULL,
@@ -133,7 +139,7 @@ CREATE TABLE Dim_Iowa_Liquor_Geo (
 
 CREATE TABLE FCT_iowa_city_population_by_year (
 
-    City_Pop_SK int not null identity(1,1),
+                City_Pop_SK int not null identity(1,1),
 	City_SK int not null,
 	City varchar(24) NULL,
 	FIPS int NULL,
@@ -148,7 +154,7 @@ CREATE TABLE FCT_iowa_city_population_by_year (
 
 CREATE TABLE FCT_iowa_county_population_by_year (
 
-    County_Pop_SK int not null identity(1,1),
+                County_Pop_SK int not null identity(1,1),
 	County_SK int not null,
 	County varchar(80) NULL,
 	FIPS int NULL,
@@ -163,7 +169,7 @@ CREATE TABLE FCT_iowa_county_population_by_year (
 
 CREATE TABLE Dim_Date(
 
-    Date_SK int not null,  -- YYYMMDD
+                Date_SK int not null,  -- YYYMMDD
 	Date_NK date NULL,     -- date
 	Date_Year int NULL,    -- YYYY
 
@@ -171,4 +177,36 @@ CREATE TABLE Dim_Date(
 	DI_CreateDate datetime not NULL default getdate(),
 	PRIMARY KEY (Date_SK)
 );
+
+------------------- 2022-11-07
+
+CREATE TABLE Dim_iowa_county (
+
+	County_SK int not null identity(1,1),
+	County varchar(80) NULL,
+	FIPS int NULL,
+	
+	DI_JobID varchar(20) NULL,
+	DI_CreateDate datetime not NULL default getdate(),
+	PRIMARY KEY (County_SK)
+);
+
+CREATE TABLE Dim_iowa_city(
+
+	City_SK int not null identity(1,1),
+	City varchar(24) NULL,
+	FIPS int NULL,
+	
+	DI_JobID varchar(20) NULL,
+	DI_CreateDate datetime not NULL default getdate(),
+	PRIMARY KEY (City_SK)
+);
+
+create view Dim_InvoiceDate as
+SELECT
+	date_sk as InvoiceDate_SK,
+	date_nk as Invoice_Date,
+   	Date_Year as Invoice_Year
+FROM Iowa_Liquor_Sales_DIM.dbo.Dim_Date;
+
 
